@@ -92,17 +92,15 @@ def distance(user1, user2):
     nombre_films_similaires = 0
 
     for movie1, note1 in user1.items():
-        try:
-            if movie1 in user2:
-                difference_absolue_notes += (note1 - user2[movie1]) ** 2
-                nombre_films_similaires += 1
-        except:
-            print(user2)
-            print(user1)
+        if movie1 in user2:
+            difference_absolue_notes += (note1 - user2[movie1]) ** 2
+            nombre_films_similaires += 1
+        else:
+            difference_absolue_notes += (note1 - 2.5) ** 2
     if nombre_films_similaires == 0:
         return sys.maxsize
 
-    return (difference_absolue_notes / nombre_films_similaires) ** 0.5
+    return (difference_absolue_notes / len(user1)) ** 0.5
 
 
 import sys
@@ -116,18 +114,18 @@ def closest_users(user1, list_users):
         if (dist < closest):
             closest = dist
             id_closest = key_user
-    return id_closest
+    return (id_closest, closest)
 
 
 # get the matrix
-# matrix = generate_users_movies_rating_matrix_with_all_movies("ml-20m/movies.csv", "100_first_user_ratings.csv")
+matrix = generate_users_movies_rating_matrix_with_all_movies("ml-20m/movies.csv", "100_first_user_ratings.csv")
 # for key in matrix:
 #     print(key)
 #     print(matrix[key])
 #     print()
 
 # generate file content matrix data
-# generate_users_movies_rating_matrix_with_all_movies_file(matrix, "ml-20m/users_movies_rating_all.csv")
+generate_users_movies_rating_matrix_with_all_movies_file(matrix, "ml-20m/users_movies_rating_all.csv")
 
 # generate dictionary from generated file
 dic = generate_users_movies_rating_dictionary_from_file("ml-20m/users_movies_rating_all.csv")
@@ -135,7 +133,13 @@ dic = generate_users_movies_rating_dictionary_from_file("ml-20m/users_movies_rat
 
 user = {29: 3.5, 32: 4}
 
-id = closest_users(user, dic)
+id, closes = closest_users(user, dic)
+if 29 in dic[id].keys():
+    print("29 :")
+    print(dic[id][29])
+if 32 in dic[id].keys():
+    print("32 :")
+    print(dic[id][32])
 print(id)
-print(dic[id])
+print(closes)
 print(user)
