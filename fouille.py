@@ -97,9 +97,7 @@ def distance(user1, user2):
             nombre_films_similaires += 1
         else:
             difference_absolue_notes += (note1 - 2.5) ** 2
-    if nombre_films_similaires == 0:
-        return sys.maxsize
-
+            
     return (difference_absolue_notes / len(user1)) ** 0.5
 
 
@@ -115,6 +113,13 @@ def closest_users(user1, list_users):
             closest = dist
             id_closest = key_user
     return (id_closest, closest)
+
+def closest_users(user1, list_users, nb_users):
+    list = []
+    for key_user, user in list_users.items():
+        list.append((key_user, distance(user1, user)))
+    sorted(list, key=lambda dist: dist[1])
+    return list[:nb_users]
 
 
 # get the matrix
@@ -132,7 +137,7 @@ dic = generate_users_movies_rating_dictionary_from_file("ml-20m/users_movies_rat
 # print(dic)
 
 user = {29: 3.5, 32: 4}
-
+"""
 id, closes = closest_users(user, dic)
 if 29 in dic[id].keys():
     print("29 :")
@@ -143,3 +148,6 @@ if 32 in dic[id].keys():
 print(id)
 print(closes)
 print(user)
+"""
+
+print(closest_users(user, dic, 20))
