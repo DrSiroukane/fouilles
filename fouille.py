@@ -89,6 +89,23 @@ def generate_users_movies_ranking_matrix_with_all_movies_file(matrix, output_fil
 
     f_output.close()
 
+def distance(user1, user2):
+    difference_absolue_notes = 0
+    nombre_films_similaires = 0
+    for movie1, note1 in user1.items():
+        if(user2.has_key(movie1)):
+            difference_absolue_notes += (note1 - user2[movie1]) ** 2
+            nombre_films_similaires += 1
+    return difference_absolue_notes / nombre_films_similaires
+
+def closest_users(user1, list_users, nb_users):
+    closest = -1
+    for user in list_users:
+        if(user != user1):
+            dist = distance(user1, user)
+            if(closest < dist):
+                closest = dist
+    return closest
 
 dictionary = generate_users_movies_ranking_matrix("ml-20m/movies.csv", "ml-20m/ratings.csv")
 print(dictionary)
