@@ -90,33 +90,52 @@ def generate_users_movies_rating_dictionary_from_file(users_movies_rating_file):
 def distance(user1, user2):
     difference_absolue_notes = 0
     nombre_films_similaires = 0
+
     for movie1, note1 in user1.items():
-        if (user2.has_key(movie1)):
-            difference_absolue_notes += (note1 - user2[movie1]) ** 2
-            nombre_films_similaires += 1
-    return difference_absolue_notes / nombre_films_similaires
+        try:
+            if movie1 in user2:
+                difference_absolue_notes += (note1 - user2[movie1]) ** 2
+                nombre_films_similaires += 1
+        except:
+            print(user2)
+            print(user1)
+    if nombre_films_similaires == 0:
+        return sys.maxsize
+
+    return (difference_absolue_notes / nombre_films_similaires) ** 0.5
 
 
-def closest_users(user1, list_users, nb_users):
-    closest = -1
-    for user in list_users:
-        if (user != user1):
-            dist = distance(user1, user)
-            if (closest < dist):
-                closest = dist
-    return closest
+import sys
+
+
+def closest_users(user1, list_users):
+    closest = sys.maxsize
+    id_closest = -1
+    for key_user, user in list_users.items():
+        dist = distance(user1, user)
+        if (dist < closest):
+            closest = dist
+            id_closest = key_user
+    return id_closest
 
 
 # get the matrix
-matrix = generate_users_movies_rating_matrix_with_all_movies("ml-20m/movies.csv", "100_first_user_ratings.csv")
+# matrix = generate_users_movies_rating_matrix_with_all_movies("ml-20m/movies.csv", "100_first_user_ratings.csv")
 # for key in matrix:
 #     print(key)
 #     print(matrix[key])
 #     print()
 
 # generate file content matrix data
-generate_users_movies_rating_matrix_with_all_movies_file(matrix, "ml-20m/users_movies_rating_all.csv")
+# generate_users_movies_rating_matrix_with_all_movies_file(matrix, "ml-20m/users_movies_rating_all.csv")
 
 # generate dictionary from generated file
 dic = generate_users_movies_rating_dictionary_from_file("ml-20m/users_movies_rating_all.csv")
-print(dic)
+# print(dic)
+
+user = {29: 3.5, 32: 4}
+
+id = closest_users(user, dic)
+print(id)
+print(dic[id])
+print(user)
