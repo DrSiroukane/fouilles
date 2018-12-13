@@ -5,6 +5,16 @@ import pandas as pds
 """ set verb a True pour verbeux """
 VERB = True
 
+USER_COL = 'userId'
+MOVIE_COL = 'movieId'
+RATING_COL = 'rating'
+TIMESTAMP_COL = 'timestamp'
+TITLE_COL = 'title'
+GENRES_COL = 'genres'
+
+RATING_FILE_PATH = '100_first_user_ratings.csv'
+MOVIES_FILE_PATH = 'ml-20m/movies.csv'
+
 
 def prt(string):
     if (VERB):
@@ -31,37 +41,58 @@ def distance(user1, user2, mean_ratings_movies):
     return sqrt(sum(square_user_1_2))
 
 
-def pairwise_distances(matrix_ratings):
+def global_distances(matrix_ratings):
     matrix_len = len(matrix_ratings)
     mean_ratings_movies = npy.mean(matrix_ratings, axis=0)
 
     result = npy.zeros((matrix_len, matrix_len))
     for i in range(matrix_len):
-        result[i][i] = 1
+        result[i][i] = 0.0
         for j in range(i + 1, matrix_len):
             result[i][j] = result[j][i] = distance(matrix_ratings[i], matrix_ratings[j], mean_ratings_movies)
 
     return result
 
 
-def get_dataset():
-    # lecture du .csv dans un dataframe
-    """
-    index : user
-    colonne : movie
-    values : rating (0.0 si non renseigne)
-    """
-    return pds.read_csv('100_first_user_ratings.csv', sep=',', encoding='utf-8',
-                        names=['user', 'movie', 'rating', 'tms']).pivot(index='user', columns='movie',
-                                                                        values='rating').fillna(0.0)
+def get_closest_users_ids(dataset_matrix, user_index_list, user_id, n=5):
+    local_index = user_index_list.index(user_id)
+    prt(user_index_list)
+    user_distances = dataset_matrix[local_index].tolist()
+    prt(user_distances)
+    user_distances_sorted = sorted(user_distances)
+    prt(user_distances_sorted)
+
+    result = []
+    for i in range(1, n + 1):
+        result.append(user_index_list[
+                          user_distances.index(
+                              user_distances_sorted[i])])
+    return result
+
+
+def get_dataset_ratings():
+    return pds.read_csv(RATING_FILE_PATH, sep=',', encoding='utf-8',
+                        usecols=[USER_COL, MOVIE_COL, RATING_COL, TIMESTAMP_COL]).pivot(index=USER_COL,
+                                                                                        columns=MOVIE_COL,
+                                                                                        values=RATING_COL).fillna(0.0)
+
+
+def get_dataset_movies():
+    return pds.read_csv(MOVIES_FILE_PATH, sep=',', encoding='utf-8',
+                        usecols=[MOVIE_COL, TITLE_COL, GENRES_COL])
 
 
 from sklearn import model_selection as ms
 
-dataframe_ratings = get_dataset()
+dataframe_ratings = get_dataset_ratings()
 
 train, test = ms.train_test_split(dataframe_ratings, test_size=0.2)
 
-dist_matrix = pairwise_distances(train.values)
+train_user_index_list = train.index.values.tolist()
 
-prt(dist_matrix[:5, :5])
+dist_matrix = global_distances(train.values)
+
+import random
+
+closest_users = get_closest_users_ids(dist_matrix, train_user_index_list, random.choice(train_user_index_list), n=10)
+print(closest_users)
