@@ -17,8 +17,16 @@ from math import sqrt
 def distance(user1, user2):
     square_user_1_2 = []
     for i in range(len(user1) - 1):
-        if user1[i] != 0 and user2[i] != 0:
-            square_user_1_2.append((user1[i] - user2[i]) ** 2)
+        if user1[i] != 0 or user2[i] != 0:
+            if user1[i] != 0:
+                x = user1[i]
+            else:
+                x = 2.5
+            if user2[i] != 0:
+                y = user2[i]
+            else:
+                y = 2.5
+            square_user_1_2.append((x - y) ** 2)
 
     return sqrt(sum(square_user_1_2))
 
