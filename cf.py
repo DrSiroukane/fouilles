@@ -14,18 +14,18 @@ def prt(string):
 from math import sqrt
 
 
-def distance(user1, user2):
+def distance(user1, user2, mean_ratings_movies):
     square_user_1_2 = []
     for i in range(len(user1) - 1):
         if user1[i] != 0 or user2[i] != 0:
             if user1[i] != 0:
                 x = user1[i]
             else:
-                x = 2.5
+                x = mean_ratings_movies[i]
             if user2[i] != 0:
                 y = user2[i]
             else:
-                y = 2.5
+                y = mean_ratings_movies[i]
             square_user_1_2.append((x - y) ** 2)
 
     return sqrt(sum(square_user_1_2))
@@ -33,13 +33,13 @@ def distance(user1, user2):
 
 def pairwise_distances(matrix_ratings):
     matrix_len = len(matrix_ratings)
-    # result = [[0] * matrix_len] * matrix_len
+    mean_ratings_movies = npy.mean(matrix_ratings, axis=0)
+
     result = npy.zeros((matrix_len, matrix_len))
     for i in range(matrix_len - 1):
         result[i][i] = 1
         for j in range(i + 1, matrix_len - 1):
-            # prt("%d, %d"%(i,j))
-            result[i][j] = result[j][i] = distance(matrix_ratings[i], matrix_ratings[j])
+            result[i][j] = result[j][i] = distance(matrix_ratings[i], matrix_ratings[j], mean_ratings_movies)
 
     return result
 
