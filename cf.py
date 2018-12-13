@@ -16,7 +16,7 @@ from math import sqrt
 
 def distance(user1, user2, mean_ratings_movies):
     square_user_1_2 = []
-    for i in range(len(user1) - 1):
+    for i in range(len(user1)):
         if user1[i] != 0 or user2[i] != 0:
             if user1[i] != 0:
                 x = user1[i]
@@ -36,9 +36,9 @@ def pairwise_distances(matrix_ratings):
     mean_ratings_movies = npy.mean(matrix_ratings, axis=0)
 
     result = npy.zeros((matrix_len, matrix_len))
-    for i in range(matrix_len - 1):
+    for i in range(matrix_len):
         result[i][i] = 1
-        for j in range(i + 1, matrix_len - 1):
+        for j in range(i + 1, matrix_len):
             result[i][j] = result[j][i] = distance(matrix_ratings[i], matrix_ratings[j], mean_ratings_movies)
 
     return result
