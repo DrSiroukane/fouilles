@@ -1,6 +1,8 @@
 import numpy as npy
 import pandas as pds
 
+import random
+
 # on peut choisir l'affichage verbeux ou non
 """ set verb a True pour verbeux """
 VERB = True
@@ -98,7 +100,7 @@ def get_recommendation_movies_for_each_closest_user(dataset_matrix, closest_user
 
 def get_final_recommendation_movies(recomendation_movies_for_each_closest_user, n=10):
     recommendation_movies_list = []
-    for key, value in dic.items():
+    for key, value in recomendation_movies_for_each_closest_user.items():
         recommendation_movies_list += value[0]
     recommendation_movies_list = sorted(list(set(recommendation_movies_list)))
     # prt(recommendation_movies_list)
@@ -123,15 +125,23 @@ def get_final_recommendation_movies(recomendation_movies_for_each_closest_user, 
             (recommendation_movies_list[i], sum_of_ratings[i] / count_nbr_of_watcher[i] + count_nbr_of_watcher[i]))
     avg_of_ratings.sort(key=lambda tup: tup[1], reverse=True)
 
-    return avg_of_ratings[:n]
+    if n != -1:
+        return avg_of_ratings[:n]
+    else:
+        return avg_of_ratings
 
 
-def mess_with_test_users_ratings(dataset_matrix, test_user_index_list, n=1):
+def mess_with_test_users_ratings(dataset_matrix, test_user_index_list, dataframe_movies_csv_index_list, n=1):
     dic = {}
-    for user_index in test_user_index_list[:5]:
-        # prt(dataset_matrix[user_index].tolist())
-        dic[user_index] = get_favorit_movies_specified_user(dataset_matrix[user_index].tolist())
-    return dic
+    for user_index in test_user_index_list:
+        get_favorit_movies_current_user = get_favorit_movies_specified_user(dataset_matrix[user_index].tolist(),
+                                                                            dataframe_movies_csv_index_list)
+        r = random.randint(0, len(get_favorit_movies_current_user[0]))
+        dic[user_index] = r
+        dataset_matrix[user_index][r] = 0
+
+    # prt(dataset_matrix)
+    return dataset_matrix, dic
 
 
 def get_dataset_ratings():
@@ -161,6 +171,13 @@ def display_recommendation_movies(final_result):
         print("%d: %s" % (tup[0], movies_dictionnary[tup[0]]))
 
 
+def check_test(movie_id, movies_recommendation):
+    for rec_movie in movies_recommendation:
+        if rec_movie[0] == movie_id:
+            return True
+    return False
+
+
 # Main programme
 
 from sklearn import model_selection as ms
@@ -172,11 +189,9 @@ dataframe_movies_csv_index_list = dataframe_ratings.columns.values.tolist()
 
 train_user_csv_index_list, test_user_csv_index_list = ms.train_test_split(dataframe_user_csv_index_list, test_size=0.2)
 
-dist_matrix = global_distances(dataframe_ratings.values)
-
-
+"""
 # recommendation for a random user
-import random
+dist_matrix = global_distances(dataframe_ratings.values)
 
 selected_user = random.choice(dataframe_user_csv_index_list)
 closest_users = get_closest_users_ids(dist_matrix, dataframe_user_csv_index_list, selected_user, n=15)  # default n = 5
@@ -189,3 +204,33 @@ final_result = get_final_recommendation_movies(dic, n=15)
 prt(final_result)
 
 display_recommendation_movies(final_result)
+"""
+
+# start testing phase
+new_ratings_matrix, test_changed_values = mess_with_test_users_ratings(dataframe_ratings.values,
+                                                                       test_user_csv_index_list,
+                                                                       dataframe_movies_csv_index_list, n=1)
+
+# print(new_ratings_matrix)
+print(test_changed_values)
+
+dist_matrix = global_distances(new_ratings_matrix)
+
+count_succeed_test = 0
+for selected_user in test_user_csv_index_list:
+    closest_users = get_closest_users_ids(dist_matrix, dataframe_user_csv_index_list, selected_user,
+                                          n=15)  # default n = 5
+
+    dic = get_recommendation_movies_for_each_closest_user(dataframe_ratings.values, closest_users,
+                                                          dataframe_movies_csv_index_list)
+
+    final_result = get_final_recommendation_movies(dic, n=-1)
+
+    if check_test(test_changed_values[selected_user], final_result):
+        count_succeed_test += 1
+
+    print(selected_user)
+    print(check_test(test_changed_values[selected_user], final_result))
+    # print(final_result)
+
+print(count_succeed_test / len(test_user_csv_index_list))
