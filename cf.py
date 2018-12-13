@@ -31,9 +31,10 @@ def pairwise_distances(matrix_ratings):
         result[i][i] = 1
         for j in range(i + 1, matrix_len - 1):
             # prt("%d, %d"%(i,j))
-            result[i][j] = distance(matrix_ratings[i], matrix_ratings[j])
+            result[i][j] = result[j][i] = distance(matrix_ratings[i], matrix_ratings[j])
 
     return result
+
 
 def get_dataset():
     # lecture du .csv dans un dataframe
@@ -43,8 +44,10 @@ def get_dataset():
     values : rating (0.0 si non renseigne)
     """
     return pds.read_csv('100_first_user_ratings.csv', sep=',', encoding='utf-8',
-                                     names=['user', 'movie', 'rating', 'tms']).pivot(index='user', columns='movie',
-                                                                                     values='rating').fillna(0.0)
+                        names=['user', 'movie', 'rating', 'tms']).pivot(index='user', columns='movie',
+                                                                        values='rating').fillna(0.0)
+
+
 from sklearn import model_selection as ms
 
 dataframe_ratings = get_dataset()
@@ -53,4 +56,4 @@ train, test = ms.train_test_split(dataframe_ratings, test_size=0.2)
 
 dist_matrix = pairwise_distances(train.values)
 
-prt(dist_matrix[:4, :4])
+prt(dist_matrix[:5, :5])
